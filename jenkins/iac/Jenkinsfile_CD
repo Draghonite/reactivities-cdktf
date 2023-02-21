@@ -4,7 +4,7 @@ pipeline {
     agent any
     // *** Documentation ***
     // name: reactivities-client-app-cd
-    // descrition: 'Continuous Delivery for the Reactivities client application.'
+    // descrition: 'Continuous Delivery for the Infrastructure-as-Code part of the Reactivities client application.'
     // discardOldBuilds: strategy: Log Rotation, maxBuildsToKeep: 10
     // doNotAllowConcurrentBuilds: true
     // server env vars: ARTIFACTORY_CREDS_ID, ARTIFACTORY_CREDS_ID
