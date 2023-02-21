@@ -42,7 +42,7 @@ pipeline {
         PACKAGE_BUILD_PATH = "${BUILDS_PATH}/${PACKAGE_NAME}"
     }
     stages {
-        stage {
+        stage('Synthesize') {
             when {
                 expression { RUN_SYNTH == "Yes" }
             }
