@@ -19,11 +19,11 @@ pipeline {
             choices: ['Yes','No'],
             description: 'Whether to synthesize.',
         )
-        // choice(
-        //     name: 'RUN_SONAR',
-        //     choices: ['Yes','No'],
-        //     description: 'Whether to run SonarQube Scanner and Quality Gate stages.',
-        // )
+        choice(
+            name: 'RUN_SONAR',
+            choices: ['Yes','No'],
+            description: 'Whether to run SonarQube Scanner and Quality Gate stages.',
+        )
         choice(
             name: 'RUN_PACKAGE_ARCHIVE',
             choices: ['Yes','No'],
@@ -32,9 +32,9 @@ pipeline {
     }
     environment {
         CI = 'false' // TODO: set to true, false for now -- else builds fail due to client build warnings
-        // SONAR_PROJECT_KEY = 'Reactivities-CDKTF'
-        // SONAR_PROJECT_BASE_PATH = '.'
-        // SONAR_SERVER_ID = 'SonarQubeScanner'
+        SONAR_PROJECT_KEY = 'Reactivities-CDKTF'
+        SONAR_PROJECT_BASE_PATH = '.'
+        SONAR_SERVER_ID = 'SonarQubeScanner'
         BUILDS_PATH = '/builds'
         BUILD_PREFIX = '1.0'
         PACKAGE_NAME = "reactivities-cdktf-${BUILD_ENV}-${BUILD_PREFIX}.${BUILD_NUMBER}.tar.gz"
@@ -62,6 +62,34 @@ pipeline {
                 dir('./cdktf.out') {
                     stash(name: 'synthartifacts')
                 }
+            }
+        }
+        stage('Sonar Scanner') {
+            when {
+                expression { RUN_SONAR == 'Yes' }
+            }
+            agent {
+                docker {
+                    image 'sonarsource/sonar-scanner-cli'
+                }
+            }
+            steps {
+                sh '''
+                    rm -rf node_modules
+                '''
+                sonarScan([
+                    SONAR_SERVER_ID: "${SONAR_SERVER_ID}",
+                    SONAR_PROJECT_BASE_PATH: "${SONAR_PROJECT_BASE_PATH}",
+                    SONAR_PROJECT_KEY: "${SONAR_PROJECT_KEY}"
+                ])
+            }
+        }
+        stage("Quality Gate") {
+            when {
+                expression { RUN_SONAR == 'Yes' }
+            }
+            steps {
+                awaitQualityGate()
             }
         }
         stage('Package') {
