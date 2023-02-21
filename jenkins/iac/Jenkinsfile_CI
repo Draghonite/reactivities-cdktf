@@ -1,0 +1,61 @@
+@Library("jenkins-library") _
+
+pipeline {
+    agent any
+    // *** Documentation ***
+    // name: reactivities-iac-ci
+    // descrition: 'Continuous Integration (Build) for the Infrastructure-as-Code part of the Reactivities client application.'
+    // discardOldBuilds: strategy: Log Rotation, maxBuildsToKeep: 10
+    // doNotAllowConcurrentBuilds: true
+    // server env vars: ARTIFACTORY_CREDS_ID, ARTIFACTORY_SERVER
+    parameters {
+        choice(
+            name: 'BUILD_ENV',
+            choices: ['dev','qa'],
+            description: 'Environment for which to build and package the solution.',
+        )
+        choice(
+            name: 'RUN_SYNTH',
+            choices: ['Yes','No'],
+            description: 'Whether to synthesize.',
+        )
+        // choice(
+        //     name: 'RUN_SONAR',
+        //     choices: ['Yes','No'],
+        //     description: 'Whether to run SonarQube Scanner and Quality Gate stages.',
+        // )
+        // choice(
+        //     name: 'RUN_PACKAGE_ARCHIVE',
+        //     choices: ['Yes','No'],
+        //     description: 'Whether to package the artifact(s).',
+        // )
+    }
+    environment {
+        CI = 'false' // TODO: set to true, false for now -- else builds fail due to client build warnings
+        SONAR_PROJECT_KEY = 'Reactivities-CDKTF'
+        SONAR_PROJECT_BASE_PATH = '.'
+        SONAR_SERVER_ID = 'SonarQubeScanner'
+        BUILDS_PATH = '/builds'
+        BUILD_PREFIX = '1.0'
+        PACKAGE_NAME = "reactivities-cdktf-${BUILD_ENV}-${BUILD_PREFIX}.${BUILD_NUMBER}.tar.gz"
+        PACKAGE_REPO_PATH = "reactivities/cdktf/${BUILD_ENV}/${PACKAGE_NAME}"
+        PACKAGE_BUILD_PATH = "${BUILDS_PATH}/${PACKAGE_NAME}"
+    }
+    stages {
+        stage {
+            when {
+                expression { RUN_SYNTH == "Yes" }
+            }
+            agent {
+                docker {
+                    image 'node:16-alpine'
+                }
+            }
+            steps {
+                sh '''
+                    echo "TODO: install cdk and synth"
+                '''
+            }
+        }
+    }
+}
