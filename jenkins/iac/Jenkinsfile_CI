@@ -56,6 +56,7 @@ pipeline {
                     apk update && apk add terraform
                     npm install -y -g cdktf-cli
                     npm install -y -g typescript
+                    npm install
                     cdktf get
                     cdktf synth
                 '''
