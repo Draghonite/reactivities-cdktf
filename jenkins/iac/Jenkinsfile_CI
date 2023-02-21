@@ -79,6 +79,7 @@ pipeline {
                     unstash 'synthartifacts'
                 }
                 sh '''
+                    mkdir -p $BUILDS_PATH
                     cd ./cdktf.out && tar -czvf $PACKAGE_BUILD_PATH .
                 '''
                 archiveArtifact([
