@@ -1,0 +1,97 @@
+@Library("jenkins-library") _
+
+pipeline {
+    agent any
+    // *** Documentation ***
+    // name: reactivities-client-app-cd
+    // descrition: 'Continuous Delivery for the Reactivities client application.'
+    // discardOldBuilds: strategy: Log Rotation, maxBuildsToKeep: 10
+    // doNotAllowConcurrentBuilds: true
+    // server env vars: ARTIFACTORY_CREDS_ID, ARTIFACTORY_CREDS_ID
+    parameters {
+        choice(
+            name: 'DEPLOY_ENV',
+            choices: ['dev','qa','prod'],
+            description: 'Environment for which to deploy.',
+        )
+        choice(
+            name: 'RUN_PACKAGE_DOWNLOAD',
+            choices: ['Yes','No'],
+            description: 'Whether to download the artifact(s).',
+        )
+        choice(
+            name: 'RUN_PACKAGE_VERIFY',
+            choices: ['Yes','No'],
+            description: 'Whether to verify integrity of the artifact(s).',
+        )
+        choice(
+            name: 'RUN_DEPLOYMENT',
+            choices: ['Yes','No'],
+            description: 'Whether to perform the deployment',
+        )
+        string(
+            name: 'CI_BUILD_NUMBER',
+            description: 'Version of the package to deploy.  Same as the prefix + CI build number (e.g. "1.0.XXX").'
+        )
+    }
+    environment {
+        // ensure if 'prod' is the intended deployment environment, use the 'qa' build
+        BUILD_ENV = "${ DEPLOY_ENV ==  'prod' ? 'qa' : DEPLOY_ENV }"
+        PACKAGE_NAME = "reactivities-cdktf-${BUILD_ENV}-${CI_BUILD_NUMBER}.tar.gz"
+        PACKAGE_REPO_PATH = "reactivities/cdktf/${BUILD_ENV}/${PACKAGE_NAME}"
+    }
+    stages {
+        stage('Download Artifact') {
+            when {
+                expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && CI_BUILD_NUMBER != '' }
+            }
+            steps {
+                downloadArtifact([
+                    ARTIFACTORY_CREDS_ID: "${ARTIFACTORY_CREDS_ID}",
+                    ARTIFACTORY_SERVER: "${ARTIFACTORY_SERVER}",
+                    PACKAGE_REPO_PATH: "${PACKAGE_REPO_PATH}",
+                    PACKAGE_NAME: "${PACKAGE_NAME}"
+                ])
+            }
+        }
+        stage('Verify Artifact') {
+            when {
+                expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && CI_BUILD_NUMBER != '' && RUN_PACKAGE_VERIFY == 'Yes'}
+            }
+            steps {
+                verifyArtifact([
+                    ARTIFACTORY_CREDS_ID: "${ARTIFACTORY_CREDS_ID}",
+                    ARTIFACTORY_SERVER: "${ARTIFACTORY_SERVER}",
+                    PACKAGE_REPO_PATH: "${PACKAGE_REPO_PATH}",
+                    PACKAGE_NAME: "${PACKAGE_NAME}"
+                ])
+            }
+        }
+        stage('Deploy') {
+            when {
+                expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' }
+            }
+            agent {
+                docker {
+                    image 'node:16-alpine'
+                }
+            }
+            steps {
+                // TODO: move to a reusable library function
+                sh '''
+                    apk update && apk add terraform
+                    npm install -y -g cdktf-cli
+                    npm install -y -g typescript
+                '''
+                sh "mkdir -p /releases"
+                dir('/releases') {
+                    unstash 'synthartifacts'
+                }
+                // TODO: cdktf deploy the package (ideally using the artifact), then clean the /releases directory
+                input message: "done?"
+                sh "echo TODO: Deploy the ${BUILD_ENV} build to ${DEPLOY_ENV}."
+                // cleanDirectory([ DIRECTORY: "/releases" ])
+            }
+        }
+    }
+}
