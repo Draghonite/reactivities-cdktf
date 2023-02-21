@@ -52,9 +52,11 @@ pipeline {
                 }
             }
             steps {
-                input message: 'done yet?'
                 sh '''
-                    echo "TODO: install cdk and synth"
+                    npm install
+                    npm install -g cdktf-cli
+                    cdktf get
+                    cdktf synth
                 '''
             }
         }
