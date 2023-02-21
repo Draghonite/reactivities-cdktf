@@ -53,12 +53,9 @@ pipeline {
             }
             steps {
                 sh '''
-                    npm install
+                    apk update && apk add terraform
                     npm install -g cdktf-cli
-                    echo "install hashicorp"
-                '''
-                input message: "done?"
-                sh '''
+                    npm install -g typescript
                     cdktf get
                     cdktf synth
                 '''
