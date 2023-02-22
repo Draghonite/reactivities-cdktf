@@ -59,10 +59,9 @@ pipeline {
                     npm install
                     cdktf get
                     cdktf synth
+                    rm -rf ./cdktf.out
                 '''
-                dir('./cdktf.out') {
-                    stash(name: 'synthartifacts')
-                }
+                stash(name: 'sourceartifacts')
             }
         }
         stage('Sonar Scanner') {
@@ -103,13 +102,12 @@ pipeline {
                 }
             }
             steps {
-                sh "mkdir -p ./cdktf.out"
-                dir('./cdktf.out') {
-                    unstash 'synthartifacts'
+                sh "mkdir -p ./artifacts"
+                dir('./artifacts') {
+                    unstash 'sourceartifacts'
                 }
                 sh '''
-                    mkdir -p $BUILDS_PATH
-                    cd ./cdktf.out && tar -czvf $PACKAGE_BUILD_PATH .
+                    cd ./artifacts && tar -czvf $PACKAGE_BUILD_PATH .
                 '''
                 archiveArtifact([
                     ARTIFACTORY_CREDS_ID: "${ARTIFACTORY_CREDS_ID}",
