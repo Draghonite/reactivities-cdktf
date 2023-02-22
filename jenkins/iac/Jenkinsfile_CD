@@ -47,9 +47,6 @@ pipeline {
         BUILD_ENV = "${ DEPLOY_ENV ==  'prod' ? 'qa' : DEPLOY_ENV }"
         PACKAGE_NAME = "reactivities-cdktf-${BUILD_ENV}-${CI_BUILD_NUMBER}.tar.gz"
         PACKAGE_REPO_PATH = "reactivities/cdktf/${BUILD_ENV}/${PACKAGE_NAME}"
-        // TODO: read in from w/in reusable library function
-        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
     stages {
         stage('Download Artifact') {
@@ -83,10 +80,7 @@ pipeline {
                 expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' }
             }
             steps {
-                cdktfDeploy([
-                    AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID,
-                    AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-                ])
+                cdktfDeploy([])
             }
         }
     }
