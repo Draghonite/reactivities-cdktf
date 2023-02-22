@@ -80,7 +80,11 @@ pipeline {
                 expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' }
             }
             steps {
-                cdktfDeploy([])
+                cdktfDeploy([
+                    PACKAGE_NAME: "${PACKAGE_NAME}",
+                    BUILD_ENV: "${BUILD_ENV}",
+                    DEPLOY_ENV: "${DEPLOY_ENV}"
+                ])
             }
         }
     }
