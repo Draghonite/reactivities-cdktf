@@ -47,6 +47,7 @@ pipeline {
         BUILD_ENV = "${ DEPLOY_ENV ==  'prod' ? 'qa' : DEPLOY_ENV }"
         PACKAGE_NAME = "reactivities-cdktf-${BUILD_ENV}-${CI_BUILD_NUMBER}.tar.gz"
         PACKAGE_REPO_PATH = "reactivities/cdktf/${BUILD_ENV}/${PACKAGE_NAME}"
+        // TODO: read in from w/in reusable library function
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
@@ -82,25 +83,10 @@ pipeline {
                 expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' }
             }
             steps {
-                // TODO: move to a reusable library function
-                sh '''
-                    apk update && apk add terraform
-                    npm install -y -g cdktf-cli
-                    npm install -y -g typescript
-                    npm install
-                    rm -rf ./artifacts && mkdir ./artifacts
-                '''
-                dir('./artifacts') {
-                    unstash 'artifactstash'
-                }
-                sh '''
-                    cd ./artifacts
-                    mkdir ./release && cd ./release
-                    tar -xzvf ../$PACKAGE_NAME .
-                    cdktf deploy --auto-deploy
-                '''
-                sh "echo TODO: Deploy the ${BUILD_ENV} build to ${DEPLOY_ENV}."
-                cleanDirectory([ DIRECTORY: "./artifacts" ])
+                cdktfDeploy([
+                    AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID,
+                    AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+                ])
             }
         }
     }
