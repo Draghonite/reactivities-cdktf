@@ -12,6 +12,10 @@ pipeline {
     // discardOldBuilds: strategy: Log Rotation, maxBuildsToKeep: 10
     // doNotAllowConcurrentBuilds: true
     // server env vars: ARTIFACTORY_CREDS_ID, ARTIFACTORY_SERVER
+    // credentials: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+    options {
+        buildDiscarder(logRotator(numToKeepStr:'5'))
+    }
     parameters {
         choice(
             name: 'DEPLOY_ENV',
@@ -43,6 +47,8 @@ pipeline {
         BUILD_ENV = "${ DEPLOY_ENV ==  'prod' ? 'qa' : DEPLOY_ENV }"
         PACKAGE_NAME = "reactivities-cdktf-${BUILD_ENV}-${CI_BUILD_NUMBER}.tar.gz"
         PACKAGE_REPO_PATH = "reactivities/cdktf/${BUILD_ENV}/${PACKAGE_NAME}"
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     }
     stages {
         stage('Download Artifact') {
@@ -81,14 +87,18 @@ pipeline {
                     apk update && apk add terraform
                     npm install -y -g cdktf-cli
                     npm install -y -g typescript
+                    npm install
                     rm -rf ./artifacts && mkdir ./artifacts
-                    cd ./artifacts
                 '''
                 dir('./artifacts') {
                     unstash 'artifactstash'
                 }
-                // TODO: cd into ./artifacts and cdktf deploy the package -- needs aws config profile settings from sys env vars
-                input message: "done?"
+                sh '''
+                    cd ./artifacts
+                    mkdir ./release && cd ./release
+                    tar -xzvf ../$PACKAGE_NAME .
+                    cdktf deploy --auto-deploy
+                '''
                 sh "echo TODO: Deploy the ${BUILD_ENV} build to ${DEPLOY_ENV}."
                 cleanDirectory([ DIRECTORY: "./artifacts" ])
             }
