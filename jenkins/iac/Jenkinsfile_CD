@@ -1,13 +1,17 @@
 @Library("jenkins-library") _
 
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:16-alpine'
+        }
+    }
     // *** Documentation ***
     // name: reactivities-client-app-cd
     // descrition: 'Continuous Delivery for the Infrastructure-as-Code part of the Reactivities client application.'
     // discardOldBuilds: strategy: Log Rotation, maxBuildsToKeep: 10
     // doNotAllowConcurrentBuilds: true
-    // server env vars: ARTIFACTORY_CREDS_ID, ARTIFACTORY_CREDS_ID
+    // server env vars: ARTIFACTORY_CREDS_ID, ARTIFACTORY_SERVER
     parameters {
         choice(
             name: 'DEPLOY_ENV',
@@ -70,11 +74,6 @@ pipeline {
         stage('Deploy') {
             when {
                 expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' }
-            }
-            agent {
-                docker {
-                    image 'node:16-alpine'
-                }
             }
             steps {
                 // TODO: move to a reusable library function
