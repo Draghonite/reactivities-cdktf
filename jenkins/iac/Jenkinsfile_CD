@@ -81,15 +81,16 @@ pipeline {
                     apk update && apk add terraform
                     npm install -y -g cdktf-cli
                     npm install -y -g typescript
+                    rm -rf ./artifacts && mkdir ./artifacts
                     cd ./artifacts
-                    rm -rf release && mkdir -p release
-                    cd ./release
-                    tar -xzvf ../$PACKAGE_NAME .
                 '''
-                // TODO: cdktf deploy the package (ideally using the artifact), then clean the /releases directory
+                dir('./artifacts') {
+                    unstash 'artifactstash'
+                }
+                // TODO: cd into ./artifacts and cdktf deploy the package -- needs aws config profile settings from sys env vars
                 input message: "done?"
                 sh "echo TODO: Deploy the ${BUILD_ENV} build to ${DEPLOY_ENV}."
-                // cleanDirectory([ DIRECTORY: "./artifacts" ])
+                cleanDirectory([ DIRECTORY: "./artifacts" ])
             }
         }
     }
