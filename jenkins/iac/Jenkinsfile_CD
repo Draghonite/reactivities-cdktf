@@ -77,15 +77,15 @@ pipeline {
             }
             steps {
                 // TODO: move to a reusable library function
-                // sh '''
-                //     apk update && apk add terraform
-                //     npm install -y -g cdktf-cli
-                //     npm install -y -g typescript
-                // '''
-                // sh "mkdir -p /releases"
-                // dir('/releases') {
-                //     unstash 'synthartifacts'
-                // }
+                sh '''
+                    apk update && apk add terraform
+                    npm install -y -g cdktf-cli
+                    npm install -y -g typescript
+                '''
+                sh "mkdir -p /releases"
+                dir('/releases') {
+                    unstash 'synthartifacts'
+                }
                 // TODO: cdktf deploy the package (ideally using the artifact), then clean the /releases directory
                 input message: "done?"
                 sh "echo TODO: Deploy the ${BUILD_ENV} build to ${DEPLOY_ENV}."
