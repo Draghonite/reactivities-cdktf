@@ -107,7 +107,7 @@ pipeline {
                 }
                 sh '''
                     mkdir -p $BUILDS_PATH
-                    cd ./artifacts && tar --exclude="./node_modules" --exclude="./artifacts" -czvf $PACKAGE_BUILD_PATH .
+                    cd ./artifacts && tar --exclude="./node_modules" --exclude="./artifacts" --exclude="./.scannerwork" -czvf $PACKAGE_BUILD_PATH .
                 '''
                 archiveArtifact([
                     ARTIFACTORY_CREDS_ID: "${ARTIFACTORY_CREDS_ID}",
