@@ -35,11 +35,16 @@ pipeline {
         choice(
             name: 'RUN_DEPLOYMENT',
             choices: ['Yes','No'],
-            description: 'Whether to perform the deployment',
+            description: 'Whether to perform the deployment.',
+        )
+        choice(
+            name: 'AWS_REGION',
+            choices: ['us-east-1', 'us-east-2', 'us-west-1', 'us-west-2'],
+            descrition: 'AWS Region for deployment of cloud resources.'
         )
         string(
             name: 'CI_BUILD_NUMBER',
-            description: 'Version of the package to deploy.  Same as the prefix + CI build number (e.g. "1.0.XXX").'
+            description: 'Version of the package to deploy.  Same as the version prefix + CI build number (e.g. "1.0.XXX").'
         )
     }
     environment {
@@ -83,7 +88,8 @@ pipeline {
                 cdktfDeploy([
                     PACKAGE_NAME: "${PACKAGE_NAME}",
                     BUILD_ENV: "${BUILD_ENV}",
-                    DEPLOY_ENV: "${DEPLOY_ENV}"
+                    DEPLOY_ENV: "${DEPLOY_ENV}",
+                    AWS_REGION: "${AWS_REGION}"
                 ])
             }
         }

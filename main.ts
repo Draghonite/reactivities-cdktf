@@ -8,15 +8,31 @@ import * as path from "path";
 class MyStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
     super(scope, id);
+
+    const defaults = {
+        region: "us-east-1",
+        availabilityZone: "us-east-1a",
+        blueprintId: "ubuntu_20_04",
+        bundleId: "nano_2_0",
+        env: "dev"
+    };
+    let options: any = {};
+    if (process?.env?.AWS_REGION) { options.region = process?.env?.AWS_REGION; }
+    if (process?.env?.AWS_AVAILABILITY_ZONE) { options.availabilityZone = process?.env?.AWS_AVAILABILITY_ZONE; }
+    if (process?.env?.AWS_BLUEPRINT_ID) { options.blueprintId = process?.env?.AWS_BLUEPRINT_ID; }
+    if (process?.env?.AWS_BUNDLE_ID) { options.bundleId = process?.env?.AWS_BUNDLE_ID; }
+    if (process?.env?.DEPLOY_ENV) { options.env = process?.env?.DEPLOY_ENV; }
+    const config = Object.assign({}, defaults, options);
+
     new AwsProvider(this, "AWS", {
-        region: "us-east-1"
+        region: config.region
     });
 
     const instance = new LightsailInstance(this, "ReactivitiesLightsailInstance", {
-        name: "Reactivities",
-        availabilityZone: "us-east-1b",
-        blueprintId: "ubuntu_20_04",
-        bundleId: "nano_2_0",
+        name: `Reactivities_${config.env}_${config.region}`,
+        availabilityZone: config.availabilityZone,
+        blueprintId: config.blueprintId,
+        bundleId: config.bundleId,
         tags: {
             "AplicationId": "Reactivities"
         },
