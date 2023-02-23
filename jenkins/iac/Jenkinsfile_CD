@@ -40,7 +40,7 @@ pipeline {
         choice(
             name: 'AWS_REGION',
             choices: ['us-east-1', 'us-east-2', 'us-west-1', 'us-west-2'],
-            descrition: 'AWS Region for deployment of cloud resources.'
+            description: 'AWS Region for deployment of cloud resources.'
         )
         string(
             name: 'CI_BUILD_NUMBER',
