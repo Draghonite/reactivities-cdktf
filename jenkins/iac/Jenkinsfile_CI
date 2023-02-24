@@ -52,7 +52,6 @@ pipeline {
                 }
             }
             steps {
-                stash(name: 'sourceartifacts')
                 sh '''
                     apk update && apk add terraform
                     npm install -y -g cdktf-cli
@@ -61,6 +60,9 @@ pipeline {
                     cdktf get
                     cdktf synth
                 '''
+                dir('cdktf.out/stacks/reactivities-cdktf') {
+                    stash(name: 'sourceartifacts')
+                }
             }
         }
         stage('Sonar Scanner') {
