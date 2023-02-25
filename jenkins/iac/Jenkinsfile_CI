@@ -60,9 +60,18 @@ pipeline {
                     cdktf get
                     cdktf synth
                 '''
+
+                withCredentials([string(credentialsId: "AWS_ACCESS_KEY_ID_${params.BUILD_ENV}", variable: 'AWS_ACCESS_KEY_ID')]) {
+                    withCredentials([string(credentialsId: "AWS_SECRET_ACCESS_KEY_${params.BUILD_ENV}", variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        sh """
+                            cd cdktf.out/stacks/reactivities-cdktf
+                            AWS_REGION=${params.AWS_REGION} AWS_AVAILABILITY_ZONE=${AWS_AVAILABILITY_ZONE} AWS_BUNDLE_ID=${AWS_BUNDLE_ID} DEPLOY_ENV=${params.BUILD_ENV} \
+                                terraform init -no-color -input=false -compact-warnings && \
+                                terraform plan -no-color -input=false -compact-warnings -out=plan.file
+                        """
+                    }
+                }
                 dir('cdktf.out/stacks/reactivities-cdktf') {
-                    sh "terraform init -no-color -input=false -compact-warnings"
-                    sh "terraform plan -no-color -input=false -compact-warnings -out=plan.file"
                     stash(name: 'sourceartifacts')
                 }
             }
