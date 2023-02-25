@@ -51,6 +51,11 @@ pipeline {
             name: 'CI_BUILD_NUMBER',
             description: 'Version of the package to deploy.  Same as the version prefix + CI build number (e.g. "1.0.XXX").'
         )
+        choice(
+            name: 'DRY_RUN',
+            choices: ['No','Yes'],
+            description: 'Whether to perform all operations except for provisioning/destruction of resources (if Yes).',
+        )
     }
     environment {
         // ensure if 'prod' is the intended deployment environment, use the 'qa' build
@@ -87,7 +92,7 @@ pipeline {
         }
         stage('Deploy') {
             when {
-                expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' && RUN_TYPE == 'Create' }
+                expression { DRY_RUN == 'Yes' && RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' && RUN_TYPE == 'Create' }
             }
             steps {
                 tfDeploy([
@@ -100,7 +105,7 @@ pipeline {
         }
         stage('Destroy') {
             when {
-                expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' && RUN_TYPE == 'Destroy' }
+                expression { DRY_RUN == 'Yes' && RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' && RUN_TYPE == 'Destroy' }
             }
             steps {
                 tfDestroy([
