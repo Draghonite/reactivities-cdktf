@@ -61,6 +61,7 @@ pipeline {
                     cdktf synth
                 '''
                 dir('cdktf.out/stacks/reactivities-cdktf') {
+                    sh "terraform init -input=falce -compact-warnings"
                     sh "terraform plan -input=false -compact-warnings -out=plan.file"
                     stash(name: 'sourceartifacts')
                 }
