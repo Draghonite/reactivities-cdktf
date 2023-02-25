@@ -54,7 +54,7 @@ pipeline {
         choice(
             name: 'DRY_RUN',
             choices: ['No','Yes'],
-            description: 'Whether to perform all operations except for provisioning/destruction of resources (if Yes).',
+            description: 'Whether to perform all enabled operations except for provisioning/destruction of resources (if Yes).',
         )
     }
     environment {
@@ -92,7 +92,7 @@ pipeline {
         }
         stage('Deploy') {
             when {
-                expression { DRY_RUN == 'Yes' && RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' && RUN_TYPE == 'Create' }
+                expression { DRY_RUN == 'No' && RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' && RUN_TYPE == 'Create' }
             }
             steps {
                 tfDeploy([
@@ -105,7 +105,7 @@ pipeline {
         }
         stage('Destroy') {
             when {
-                expression { DRY_RUN == 'Yes' && RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' && RUN_TYPE == 'Destroy' }
+                expression { DRY_RUN == 'No' && RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' && RUN_TYPE == 'Destroy' }
             }
             steps {
                 tfDestroy([
