@@ -42,6 +42,11 @@ pipeline {
             choices: ['us-east-1', 'us-east-2', 'us-west-2'],
             description: 'AWS Region for deployment of cloud resources.'
         )
+        choice(
+            name: 'RUN_TYPE',
+            choices: ['Create', 'Destroy'],
+            description: 'Whether to create or destroy resources.'
+        )
         string(
             name: 'CI_BUILD_NUMBER',
             description: 'Version of the package to deploy.  Same as the version prefix + CI build number (e.g. "1.0.XXX").'
@@ -82,10 +87,23 @@ pipeline {
         }
         stage('Deploy') {
             when {
-                expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' }
+                expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' && RUN_TYPE == 'Create' }
             }
             steps {
-                cdktfDeploy([
+                tfDeploy([
+                    PACKAGE_NAME: "${PACKAGE_NAME}",
+                    BUILD_ENV: "${BUILD_ENV}",
+                    DEPLOY_ENV: "${DEPLOY_ENV}",
+                    AWS_REGION: "${AWS_REGION}"
+                ])
+            }
+        }
+        stage('Destroy') {
+            when {
+                expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && RUN_DEPLOYMENT == 'Yes' && RUN_TYPE == 'Destroy' }
+            }
+            steps {
+                tfDestroy([
                     PACKAGE_NAME: "${PACKAGE_NAME}",
                     BUILD_ENV: "${BUILD_ENV}",
                     DEPLOY_ENV: "${DEPLOY_ENV}",
