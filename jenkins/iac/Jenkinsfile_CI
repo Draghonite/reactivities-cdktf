@@ -103,13 +103,13 @@ pipeline {
                 }
             }
             steps {
-                sh "mkdir -p ./artifacts"
+                sh "rm -rf ./artifacts && mkdir ./artifacts"
                 dir('./artifacts') {
                     unstash 'sourceartifacts'
                 }
                 sh '''
                     mkdir -p $BUILDS_PATH
-                    cd ./artifacts && tar --exclude="./node_modules" --exclude="./artifacts" --exclude="./.scannerwork" -czvf $PACKAGE_BUILD_PATH .
+                    cd ./artifacts && tar -czvf $PACKAGE_BUILD_PATH .
                 '''
                 archiveArtifact([
                     ARTIFACTORY_CREDS_ID: "${ARTIFACTORY_CREDS_ID}",
