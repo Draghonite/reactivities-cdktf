@@ -1,6 +1,5 @@
-@Library("jenkins-library") _
-
 import jenkins.model.Jenkins
+@Library("jenkins-library") _
 
 pipeline {
     agent {
