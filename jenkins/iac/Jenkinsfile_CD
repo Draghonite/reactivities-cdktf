@@ -1,5 +1,7 @@
 @Library("jenkins-library") _
 
+import jenkins.model.Jenkins
+
 pipeline {
     agent {
         docker {
