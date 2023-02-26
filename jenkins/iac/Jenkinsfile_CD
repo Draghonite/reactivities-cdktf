@@ -69,8 +69,7 @@ pipeline {
                 expression { RUN_PACKAGE_DOWNLOAD == 'Yes' && CI_BUILD_NUMBER != '' }
             }
             steps {
-                def buildNumber = Jenkins.instance.getItem('reactivities-iac-ci').lastSuccessfulBuild.number
-                sh "echo LAST SUCCESSFUL CI BUILD:  ${$buildNumber}"
+                sh "echo LAST SUCCESSFUL CI BUILD: ${$Jenkins.instance.getItem('reactivities-iac-ci').lastSuccessfulBuild.number}"
                 downloadArtifact([
                     ARTIFACTORY_CREDS_ID: "${ARTIFACTORY_CREDS_ID}",
                     ARTIFACTORY_SERVER: "${ARTIFACTORY_SERVER}",
